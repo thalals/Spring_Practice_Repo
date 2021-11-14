@@ -5,10 +5,11 @@ import com.example.springcore.dto.ProductRequestDto;
 import com.example.springcore.domain.Product;
 import com.example.springcore.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.List;
-
+@Service
 public class ProductService {
     // 멤버 변수 선언
     private final ProductRepository productRepository;
@@ -19,26 +20,34 @@ public class ProductService {
         // 멤버 변수 생성
         this.productRepository = productRepository;
     }
+    // 회원 ID 로 등록된 모든 상품 조회
+    public List<Product> getProducts(Long userId) {
+        return productRepository.findAllByUserId(userId);
+    }
 
     public List<Product> getProducts() throws SQLException {
         // 멤버 변수 사용
-        return productRepository.getProducts();
+        return productRepository.findAll();
+    }
+    // 모든 상품 조회 (관리자용)
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
     }
 
-    public Product createProduct(ProductRequestDto requestDto) throws SQLException {
+    public Product createProduct(ProductRequestDto requestDto, Long userId) throws SQLException {
         // 요청받은 DTO 로 DB에 저장할 객체 만들기
-        Product product = new Product(requestDto);
-        productRepository.createProduct(product);
+        Product product = new Product(requestDto, userId);
+        productRepository.save(product);
         return product;
     }
 
     public Product updateProduct(Long id, ProductMypriceRequestDto requestDto) throws SQLException {
-        Product product = productRepository.getProduct(id);
-        if (product == null) {
-            throw new NullPointerException("해당 아이디가 존재하지 않습니다.");
-        }
+        Product product = productRepository.findById(id).orElseThrow(
+                ()->new NullPointerException("해당 아이디가 존재하지 않습니다,")
+        );
+
         int myPrice = requestDto.getMyprice();
-        productRepository.updateProductMyPrice(id, myPrice);
+        product.updateMyPrice(myPrice);
         return product;
     }
 }

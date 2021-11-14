@@ -1,4 +1,4 @@
-package com.example.springcore;
+package com.example.springcore.util;
 
 import com.example.springcore.dto.ItemDto;
 import org.json.JSONArray;

@@ -1,7 +1,7 @@
 package com.example.springcore.controller;
 
 import com.example.springcore.dto.ItemDto;
-import com.example.springcore.NaverShopSearch;
+import com.example.springcore.util.NaverShopSearch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
