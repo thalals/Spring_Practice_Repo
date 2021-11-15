@@ -1,6 +1,7 @@
 package com.example.springcore.controller;
 
 import com.example.springcore.security.UserDetailsImpl;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,7 @@ public class HomeController {
         return "index";
     }
 
+    @Secured("ROLE_ADMIN")  //admin 페이지 접근하는 유저 정보에 Role admin이 있는지 체크
     @GetMapping("/admin")
     public String admin(Model model, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         model.addAttribute("username", userDetails.getUsername());
