@@ -2,14 +2,14 @@ package com.example.springcore.controller;
 
 import com.example.springcore.domain.Folder;
 import com.example.springcore.dto.FolderCreateRequestDto;
+import com.example.springcore.exeception.ApiException;
 import com.example.springcore.security.UserDetailsImpl;
 import com.example.springcore.service.FolderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,5 +30,20 @@ public class FolderController {
     public List<Folder> addFolders(@RequestBody FolderCreateRequestDto folderCreateRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         List<String> folderNames = folderCreateRequestDto.getFolderNames();
         return folderService.createFolders(folderNames, userDetails.getUser());
+    }
+
+    //폴더 저장시 에러 처리
+    @ExceptionHandler({ IllegalArgumentException.class })
+    public ResponseEntity<Object> handle(IllegalArgumentException ex) {
+        ApiException apiException = new ApiException(
+                ex.getMessage(),
+                // HTTP 400 -> Client Error
+                HttpStatus.BAD_REQUEST
+        );
+
+        return new ResponseEntity<>(
+                apiException,
+                HttpStatus.BAD_REQUEST
+        );
     }
 }

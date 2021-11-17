@@ -3,6 +3,7 @@ package com.example.springcore.service;
 import com.example.springcore.domain.Folder;
 import com.example.springcore.domain.Product;
 import com.example.springcore.domain.User;
+import com.example.springcore.exeception.ApiRequestException;
 import com.example.springcore.repository.FolderRepository;
 import com.example.springcore.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +12,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import javax.transaction.TransactionManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -21,19 +27,34 @@ public class FolderService {
     // 멤버 변수 선언
     private final FolderRepository folderRepository;
     private final ProductRepository productRepository;
+    private TransactionManager transactionManager;
 
     // 회원 ID 로 등록된 모든 폴더 조회
     public List<Folder> getFolders(User user) {
         return folderRepository.findAllByUser(user);
     }
 
+    @Transactional(readOnly = false)
     public List<Folder> createFolders(List<String> folderNameList, User user) {
+
         List<Folder> folderList = new ArrayList<>();
+
         for (String folderName : folderNameList) {
+            // 1) DB 에 폴더명이 folderName 인 폴더가 존재하는지?
+            Folder folderInDB = folderRepository.findByName(folderName);
+            if (folderInDB != null) {
+                // DB 에 중복 폴더명 존재한다면 Exception 발생시킴
+                throw new ApiRequestException("중복된 폴더명 ('" + folderName + "') 을 삭제하고 재시도해 주세요!");
+            }
+
+            // 2) 폴더를 DB 에 저장
             Folder folder = new Folder(folderName, user);
+            folder = folderRepository.save(folder);
+
+            // 3) folderList 에 folder Entity 객체를 추가
             folderList.add(folder);
         }
-        folderList = folderRepository.saveAll(folderList);
+
         return folderList;
     }
 
